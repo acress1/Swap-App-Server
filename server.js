@@ -24,21 +24,37 @@ const db = knex({
 // From InlineForm.js to DB
 
 app.post('/formData', (req, res) => {
-  const formData = req.body;
+  let formDataArray = req.body;
 
-  const requiredFields = ['Name', 'Email', 'Date', 'Outbound', 'Inbound'];
-  const missingFields = requiredFields.filter(field => !formData[field]);
-
-  if(missingFields.length > 0) {
-    return res.status(400).json({error: 'Incomplete form data', missingFields})
+  if (!Array.isArray(formDataArray)) {
+    formDataArray = [formDataArray];
   }
 
-  db('Swaps')
-    .insert({...formData, Sent: new Date()})
-    .returning('*')
-    .then(insertedData => res.status(200).json({ message: 'Form received and stored successfully', data: insertedData }))
-    .then(data => console.log(data))
-    .catch(error => res.status(500).json({ error: 'Internal Server Error' }))
+  const processShift = async (shift) => {
+    const requiredFields = ['Name', 'Email', 'Date', 'Outbound', 'Inbound'];
+    const missingFields = requiredFields.filter(field => !shift[field]);
+
+    if (missingFields.length > 0) {
+      return { error: 'Incomplete form data', missingFields };
+    }
+
+    try {
+      const insertedData = await db('Swaps')
+        .insert({ ...shift, Sent: new Date() })
+        .returning('*');
+
+      return { message: 'Form received and stored successfully', data: insertedData[0] };
+    } catch (error) {
+      return { error: 'Internal Server Error' };
+    }
+  };
+
+  const processShifts = async () => {
+    const results = await Promise.all(formDataArray.map(processShift));
+    res.status(200).json(results);
+  };
+
+  processShifts();
 });
 
 // From DB to DayBox.js

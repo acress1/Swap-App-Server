@@ -65,6 +65,7 @@ app.get('/formData/:date', (req, res) => {
   db('Swaps')
     .select()
     .where('Date', date)
+    .orderBy('Sent', 'desc')
     .then(data => {
       const formatedData = data.map(entry => ({
         ...entry,

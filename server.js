@@ -31,7 +31,7 @@ app.post('/formData', (req, res) => {
   }
 
   const processShift = async (shift) => {
-    const requiredFields = [/*'Name',*/ 'Email', 'Date', 'Outbound', 'Inbound'];
+    const requiredFields = ['Email', 'Position', 'Date', 'Outbound', 'Inbound'];
     const missingFields = requiredFields.filter(field => !shift[field]);
 
     if (missingFields.length > 0) {

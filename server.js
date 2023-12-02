@@ -65,9 +65,16 @@ app.get('/formData/:date', (req, res) => {
   const date = req.params.date;
 
   db('Swaps')
+    .distinctOn(['Date', 'Inbound', 'Outbound', 'Email'])
     .select()
     .where('Date', date)
-    .orderBy('Sent', 'desc')
+    .orderBy([
+      { column: 'Date', order: 'desc' },
+      { column: 'Inbound', order: 'desc' },
+      { column: 'Outbound', order: 'desc' },
+      { column: 'Email', order: 'desc' },
+      { column: 'Sent', order: 'desc' }
+    ])
     .then(data => {
       const formatedData = data.map(entry => ({
         ...entry,

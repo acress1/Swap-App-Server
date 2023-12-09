@@ -21,6 +21,17 @@ const db = knex({
 });
 
 // Routes
+// Check Days with Data TO DO
+app.get('/daysWithData', (req, res) => {
+  db('Swaps')
+    .distinct('Date')
+    .then(dates => {
+      const formattedDates = dates.map(entry => new Date(entry.Date).toLocaleDateString());
+      res.status(200).json({ daysWithData: formattedDates });
+    })
+    .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
+});
+
 // From InlineForm.js to DB
 
 app.post('/formData', (req, res) => {

@@ -21,7 +21,8 @@ const db = knex({
 });
 
 // Routes
-// Check Days with Data TO DO
+// Check Days with Data
+
 app.get('/daysWithData', (req, res) => {
   db('Swaps')
     .distinct('Date')
@@ -96,6 +97,37 @@ app.get('/formData/:date', (req, res) => {
     })
     .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
 });
+
+// Auto-deletion of outdated rows
+
+app.delete('/deleteOutdatedRows', (req, res) => {
+  const currentDate = new Date();
+  db('Swaps')
+    .where('Date', '<', currentDate)
+    .del()
+    .then(() => res.status(200).json({ message: 'Outdated rows deleted successfully' }))
+    .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
+});
+
+const runAutoDelete = () => {
+  const currentTime = new Date();
+  const autoDeleteTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() + 1, 12, 0, 0, 0);
+  const timeUntilAutoDelete = autoDeleteTime - currentTime;
+
+  setTimeout(() => {
+    fetch('http://localhost:3001/deleteOutdatedRows', { method: 'DELETE' })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to delete outdated rows')
+      }
+      return response.json()})
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+    runAutoDelete();
+  }, timeUntilAutoDelete);
+};
+
+runAutoDelete();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -90,8 +90,25 @@ app.get('/formData/:date', (req, res) => {
     .then(data => {
       const formatedData = data.map(entry => ({
         ...entry,
-        Date: new Date(entry.Date).toLocaleDateString(), // Format Date before sending it
-        Sent: new Date(entry.Sent).toLocaleString() // Format Sent before sending it
+        Date: new Date(entry.Date).toLocaleDateString(),
+        Sent: new Date(entry.Sent).toLocaleString() 
+      }));
+      res.status(200).json({ data: formatedData });
+    })
+    .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
+});
+
+// From DB to QuickViewBox.js
+
+app.get('/allFormData', (req, res) => {
+  db('Swaps')
+    .select('Date', 'Outbound', 'Inbound', 'Position', 'Email', 'Early', 'Late', 'LTA', 'DO', 'Sent', 'Note')
+    .orderBy('Sent', 'desc')
+    .then(data => {
+      const formatedData = data.map(entry => ({
+        ...entry,
+        Date: new Date(entry.Date).toLocaleDateString(),
+        Sent: new Date(entry.Sent).toLocaleString()
       }));
       res.status(200).json({ data: formatedData });
     })
@@ -111,7 +128,7 @@ app.delete('/deleteOutdatedRows', (req, res) => {
 
 const runAutoDelete = () => {
   const currentTime = new Date();
-  const autoDeleteTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() + 1, 12, 0, 0, 0);
+  const autoDeleteTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() +1, 12, 0, 0, 0);
   const timeUntilAutoDelete = autoDeleteTime - currentTime;
 
   setTimeout(() => {

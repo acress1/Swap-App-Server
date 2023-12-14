@@ -6,7 +6,6 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -60,7 +59,7 @@ app.post('/formData', (req, res) => {
       });
   };
   
-  const processShifts = () => {
+  const processMultiShift = () => {
     const promises = formDataArray.map(processShift);
   
     Promise.all(promises)
@@ -68,7 +67,7 @@ app.post('/formData', (req, res) => {
       .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
   };
   
-  processShifts();
+  processMultiShift();
 });
 
 // From DB to DayBox.js
@@ -115,7 +114,7 @@ app.get('/allFormData', (req, res) => {
     .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
 });
 
-// Auto-deletion of outdated rows
+// Auto-deletion of outdated rows (without adding new dependencies)
 
 app.delete('/deleteOutdatedRows', (req, res) => {
   const currentDate = new Date();
@@ -128,7 +127,7 @@ app.delete('/deleteOutdatedRows', (req, res) => {
 
 const runAutoDelete = () => {
   const currentTime = new Date();
-  const autoDeleteTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() +1, 12, 0, 0, 0);
+  const autoDeleteTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() + 1, 0, 0, 0, 0);
   const timeUntilAutoDelete = autoDeleteTime - currentTime;
 
   setTimeout(() => {

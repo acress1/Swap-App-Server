@@ -1,7 +1,5 @@
 # Swap App Server
 
-Client: Swap App 'https://github.com/MathDevWeb/swap-app'
-
 Branches:
 
 - 1.12.2023 > First prototype

@@ -102,7 +102,7 @@ app.get('/formData/:date', (req, res) => {
 app.get('/allFormData', (req, res) => {
   db('Swaps')
     .select('Date', 'Outbound', 'Inbound', 'Position', 'Email', 'Early', 'Late', 'LTA', 'DO', 'Sent', 'Note')
-    .orderBy([{ column: 'Sent', order: 'desc'}])
+    .orderBy([{ column: 'Date', order: 'asc'}])
     .then(data => {
       const formatedData = data.map(entry => ({
         ...entry,

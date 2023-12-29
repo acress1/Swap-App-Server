@@ -20,17 +20,6 @@ const db = knex({
 });
 
 // Routes
-// Check Days with Data
-
-app.get('/daysWithData', (req, res) => {
-  db('Swaps')
-    .distinct('Date')
-    .then(dates => {
-      const formattedDates = dates.map(entry => new Date(entry.Date).toLocaleDateString());
-      res.status(200).json({ daysWithData: formattedDates });
-    })
-    .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
-});
 
 // From InlineForm.js to DB
 
@@ -70,42 +59,22 @@ app.post('/formData', (req, res) => {
   processMultiShift();
 });
 
-// From DB to DayBox.js
+// From DB to Front
 
-app.get('/formData/:date', (req, res) => {
-  const date = req.params.date;
-
+app.get('/dbData', (req, res) => {
   db('Swaps')
-    .select('Outbound', 'Inbound', 'Position', 'Email', 'Early', 'Late', 'LTA', 'DO', 'Sent', 'Note')
-    .where('Date', date)
+    .select('Date', 'Outbound', 'Inbound', 'Position', 'Email', 'Early', 'Late', 'LTA', 'DO', 'Sent', 'Note')
     .distinctOn(['Date', 'Inbound', 'Outbound', 'Email'])
     .orderBy([
-      { column: 'Date', order: 'desc' },
+      { column: 'Date', order: 'asc' },
       { column: 'Inbound', order: 'desc' },
       { column: 'Outbound', order: 'desc' },
       { column: 'Email', order: 'desc' },
       { column: 'Sent', order: 'desc' }
     ])
     .then(data => {
-      const formatedData = data.map(entry => ({
-        ...entry,
-        Date: new Date(entry.Date).toLocaleDateString('fr-FR'),
-        Sent: new Date(entry.Sent).toLocaleString('fr-FR', { hour12: false}) 
-      }));
-      res.status(200).json({ data: formatedData });
-    })
-    .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
-});
-
-// From DB to QuickViewBox.js
-
-app.get('/allFormData', (req, res) => {
-  db('Swaps')
-    .select('Date', 'Outbound', 'Inbound', 'Position', 'Email', 'Early', 'Late', 'LTA', 'DO', 'Sent', 'Note')
-    .orderBy([{ column: 'Date', order: 'asc'}])
-    .then(data => {
-      const formatedData = data.map(entry => ({
-        ...entry,
+      const formatedData = data
+      .map(entry => ({...entry,
         Date: new Date(entry.Date).toLocaleDateString('fr-FR'),
         Sent: new Date(entry.Sent).toLocaleString('fr-FR', { hour12: false})
       }));
@@ -113,37 +82,6 @@ app.get('/allFormData', (req, res) => {
     })
     .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
 });
-
-//Auto-deletion of outdated rows
-
-// app.delete('/deleteOutdatedRows', (req, res) => {
-//   const currentDate = new Date();
-//   db('Swaps')
-//     .where('Date', '<', currentDate)
-//     .del()
-//     .then(() => res.status(200).json({ message: 'Outdated rows deleted successfully' }))
-//     .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
-// });
-
-// const runAutoDelete = () => {
-//   const currentTime = new Date();
-//   const autoDeleteTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() + 1, 0, 0, 0, 0);
-//   const timeUntilAutoDelete = autoDeleteTime - currentTime;
-
-//   setTimeout(() => {
-//     fetch('http://localhost:3001/deleteOutdatedRows', { method: 'DELETE' })
-//     .then(response => {
-//       if (!response.ok) {
-//         throw new Error('Failed to delete outdated rows')
-//       }
-//       return response.json()})
-//     .then(data => console.log(data))
-//     .catch(error => console.error(error));
-//     runAutoDelete();
-//   }, timeUntilAutoDelete);
-// };
-
-// runAutoDelete();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

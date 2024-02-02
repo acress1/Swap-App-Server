@@ -62,9 +62,12 @@ app.post('/formData', (req, res) => {
 // From DB to Front
 
 app.get('/dbData', (req, res) => {
+  const currentDate = new Date();
+
   db('Swaps')
     .select('Date', 'Outbound', 'Inbound', 'Position', 'Email', 'Early', 'Late', 'LTA', 'DO', 'Sent', 'Note')
     .distinctOn(['Date', 'Inbound', 'Outbound', 'Email'])
+    .where('Date', '>', currentDate)
     .orderBy([
       { column: 'Date', order: 'asc' },
       { column: 'Inbound', order: 'desc' },

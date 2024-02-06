@@ -68,19 +68,15 @@ app.get('/dbData', (req, res) => {
     .select('Date', 'Outbound', 'Inbound', 'Position', 'Email', 'Early', 'Late', 'LTA', 'DO', 'Sent', 'Note')
     .distinctOn(['Date', 'Inbound', 'Outbound', 'Email'])
     .where('Date', '>', currentDate)
-    .orderBy([
-      { column: 'Date', order: 'asc' },
-      { column: 'Inbound', order: 'desc' },
-      { column: 'Outbound', order: 'desc' },
-      { column: 'Email', order: 'desc' },
-      { column: 'Sent', order: 'desc' }
-    ])
+    .orderBy( [{ column: 'Date', order: 'asc' }] )
     .then(data => {
-      const formatedData = data
-      .map(entry => ({...entry,
-        Date: new Date(entry.Date).toLocaleDateString('fr-FR'),
-        Sent: new Date(entry.Sent).toLocaleString('fr-FR', { hour12: false})
-      }));
+      const formatedData = 
+      data.map(entry => (
+        {...entry,
+          Date: new Date(entry.Date).toLocaleDateString('fr-FR'),
+          Sent: new Date(entry.Sent).toLocaleString('fr-FR', { hour12: false})
+        }
+      ));
       res.status(200).json({ data: formatedData });
     })
     .catch(error => res.status(500).json({ error: 'Internal Server Error' }));
